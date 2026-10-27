@@ -851,6 +851,49 @@
       history: []
     };
 
+    // --- 効果音（Web Audio API）ジェネレーター ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'scan') {
+        // ピッ！と高い軽い音（バーコード検出時）
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'borrow') {
+        // フォン♪と明るく広がる上昇音（貸出成功時）
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } else if (type === 'return') {
+        // ポロン♪と落ち着いた下降音（返却完了時）
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(784, now);
+        osc.frequency.exponentialRampToValueAtTime(523, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       checkLoginStatus();
     });
@@ -955,12 +998,10 @@
     // 画像描画または表紙風カードの判定強化（URLがない・または読み込めない時は文字カード表示）
     function renderBookCoverElement(coverUrl, title, volume, sizeType = 'medium') {
       const volText = volume ? `${volume}巻` : '';
-      // 有効なURLやBase64形式の画像データがある場合のみ<img>タグを試みる
       if (coverUrl && (coverUrl.startsWith('http://') || coverUrl.startsWith('https://') || coverUrl.startsWith('data:image'))) {
         let cls = 'book-cover-medium';
         if (sizeType === 'small') cls = 'book-cover-small';
        
-        // 読み込みに失敗したら、エスケープした文字入りのフォールバックカードに置換
         const escapedTitle = (title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         return `<img src="${coverUrl}" class="${cls}" alt="${escapedTitle}" onerror="this.outerHTML=createFallbackCardHTML('${escapedTitle}', '${volText}', '${sizeType}')">`;
       } else {
@@ -1128,7 +1169,7 @@
       event.target.value = '';
     }
 
-    // --- 履歴詳細モーダル操作（画像表示サイズは標準に戻しました） ---
+    // --- 履歴詳細モーダル操作 ---
     function openHistoryDetail(historyId) {
       const item = appData.history.find(h => h.id === historyId);
       if (!item) return;
@@ -1239,6 +1280,7 @@
       if (code && code.startsWith('978') && code.length === 13) {
         isProcessingScan = true;
         closeScanner();
+        playSound('scan'); // ★ バーコードスキャン成功音
         processBarcode(code);
       }
     }
@@ -1258,6 +1300,7 @@
             const code = result.codeResult.code;
             if (code.startsWith('978') && code.length === 13) {
               closeScanner();
+              playSound('scan'); // ★ 画像ファイルからのスキャン成功音
               processBarcode(code);
             } else {
               alert(`検出されたコード: ${code}\nISBN（978から始まる13桁）ではありませんでした。`);
@@ -1275,6 +1318,7 @@
       const isbn = document.getElementById('manual-isbn').value.trim();
       if (isbn) {
         closeScanner();
+        playSound('scan'); // ★ 手入力からの登録・貸出音
         processBarcode(isbn);
         document.getElementById('manual-isbn').value = '';
       }
@@ -1288,6 +1332,7 @@
         appData.history[existingHistoryIndex].status = 'returned';
         appData.history[existingHistoryIndex].returnDate = today;
 
+        playSound('return'); // ★ 返却時の音
         const volStr = appData.history[existingHistoryIndex].volume ? ` (${appData.history[existingHistoryIndex].volume}巻)` : '';
         alert(`『${appData.history[existingHistoryIndex].title}${volStr}』を返却しました！`);
         saveUserData();
@@ -1388,6 +1433,7 @@
       });
 
       appData.points += 1;
+      playSound('borrow'); // ★ 新規貸出・登録時の成功音
 
       const volStr = targetBook.volume ? ` (${targetBook.volume}巻)` : '';
       alert(`『${targetBook.title}${volStr}』を貸し出しました！\n1 pt 獲得しました✨`);
