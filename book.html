@@ -854,7 +854,7 @@
     // --- 効果音（Web Audio API）ジェネレーター ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    function playSound(type) {
+   function playSound(type) {
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
@@ -862,69 +862,58 @@
   const now = audioCtx.currentTime;
 
   if (type === 'scan') {
-    // 🎵 スキャン：派手な「ピコンッ！✨」（2段階の高音）
-    const osc1 = audioCtx.createOscillator();
-    const osc2 = audioCtx.createOscillator();
+    // 🎵 スキャン：鋭く響く「ピッ！」
+    const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-
-    osc1.connect(gain);
-    osc2.connect(gain);
+    osc.connect(gain);
     gain.connect(audioCtx.destination);
 
-    // 「ピ」の音（高音）
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(1400, now);
-    osc1.frequency.setValueAtTime(1400, now + 0.05);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1800, now);
 
-    // 「コンッ」の音（さらに高音へシャープに跳ね上がる）
-    osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(2000, now + 0.05);
-    osc2.frequency.exponentialRampToValueAtTime(2400, now + 0.15);
+    gain.gain.setValueAtTime(0.25, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
 
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-
-    osc1.start(now);
-    osc1.stop(now + 0.05);
-    osc2.start(now + 0.05);
-    osc2.stop(now + 0.18);
+    osc.start(now);
+    osc.stop(now + 0.08);
 
   } else if (type === 'borrow') {
-    // 🎵 貸出：キラキラファンファーレ風「パパパンッ！✨」
-    [523.25, 659.25, 783.99, 1046.50].forEach((freq, index) => {
+    // 🎵 貸出：テンポよく「ピピッ！」と2回鳴る派手な音
+    [0, 0.09].forEach((delay, index) => {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.connect(gain);
       gain.connect(audioCtx.destination);
 
-      const startTime = now + (index * 0.05);
+      const startTime = now + delay;
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, startTime);
+      osc.frequency.setValueAtTime(1500 + (index * 400), startTime);
 
-      gain.gain.setValueAtTime(0.2, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15);
+      gain.gain.setValueAtTime(0.25, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.08);
 
       osc.start(startTime);
-      osc.stop(startTime + 0.15);
+      osc.stop(startTime + 0.08);
     });
 
   } else if (type === 'return') {
-    // 🎵 返却：ポップなチャイム風「ポロロンッ♪」
-    [1046.50, 783.99, 659.25, 523.25].forEach((freq, index) => {
+    // 🎵 返却：高音で「ピピロッ♪」と明るく弾む音
+    [0, 0.08, 0.16].forEach((delay, index) => {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.connect(gain);
       gain.connect(audioCtx.destination);
 
-      const startTime = now + (index * 0.05);
+      const startTime = now + delay;
+      const freqs = [1200, 1600, 2000];
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, startTime);
+      osc.frequency.setValueAtTime(freqs[index], startTime);
 
       gain.gain.setValueAtTime(0.2, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.08);
 
       osc.start(startTime);
-      osc.stop(startTime + 0.15);
+      osc.stop(startTime + 0.08);
     });
   }
 } 
