@@ -855,44 +855,80 @@
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function playSound(type) {
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+
+  const now = audioCtx.currentTime;
+
+  if (type === 'scan') {
+    // 🎵 スキャン：派手な「ピコンッ！✨」（2段階の高音）
+    const osc1 = audioCtx.createOscillator();
+    const osc2 = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    // 「ピ」の音（高音）
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(1400, now);
+    osc1.frequency.setValueAtTime(1400, now + 0.05);
+
+    // 「コンッ」の音（さらに高音へシャープに跳ね上がる）
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(2000, now + 0.05);
+    osc2.frequency.exponentialRampToValueAtTime(2400, now + 0.15);
+
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+    osc1.start(now);
+    osc1.stop(now + 0.05);
+    osc2.start(now + 0.05);
+    osc2.stop(now + 0.18);
+
+  } else if (type === 'borrow') {
+    // 🎵 貸出：キラキラファンファーレ風「パパパンッ！✨」
+    [523.25, 659.25, 783.99, 1046.50].forEach((freq, index) => {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.connect(gain);
       gain.connect(audioCtx.destination);
 
-      const now = audioCtx.currentTime;
+      const startTime = now + (index * 0.05);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, startTime);
 
-      if (type === 'scan') {
-        // ピッ！と高い軽い音（バーコード検出時）
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1200, now);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-        osc.start(now);
-        osc.stop(now + 0.08);
-      } else if (type === 'borrow') {
-        // フォン♪と明るく広がる上昇音（貸出成功時）
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        osc.start(now);
-        osc.stop(now + 0.25);
-      } else if (type === 'return') {
-        // ポロン♪と落ち着いた下降音（返却完了時）
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(784, now);
-        osc.frequency.exponentialRampToValueAtTime(523, now + 0.2);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        osc.start(now);
-        osc.stop(now + 0.25);
-      }
-    }
+      gain.gain.setValueAtTime(0.2, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.15);
+    });
+
+  } else if (type === 'return') {
+    // 🎵 返却：ポップなチャイム風「ポロロンッ♪」
+    [1046.50, 783.99, 659.25, 523.25].forEach((freq, index) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const startTime = now + (index * 0.05);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+
+      gain.gain.setValueAtTime(0.2, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.15);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.15);
+    });
+  }
+} 
+
 
     window.addEventListener('DOMContentLoaded', () => {
       checkLoginStatus();
