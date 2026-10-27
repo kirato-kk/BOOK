@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>本の貸出＆記録アプリ</title>
+  <title>コミログ</title>
   <!-- QuaggaJS for Barcode Scanning -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
   <style>
@@ -633,16 +633,16 @@
     <!-- 認証画面 -->
     <div id="auth-screen" class="auth-overlay">
       <div class="auth-title" id="auth-title">ログイン</div>
-      <div class="auth-subtitle">本棚と貸出履歴を記録しましょう</div>
+      <div class="auth-subtitle">本棚と貸出履歴を記録しよう</div>
 
       <div class="form-group">
         <label class="form-label">ユーザー名</label>
-        <input type="text" id="auth-username" class="form-input" placeholder="例: yamada">
+        <input type="text" id="auth-username" class="form-input" placeholder="">
       </div>
 
       <div class="form-group">
         <label class="form-label">パスワード</label>
-        <input type="password" id="auth-password" class="form-input" placeholder="••••••••">
+        <input type="password" id="auth-password" class="form-input" placeholder="">
       </div>
 
       <button class="btn-primary" id="auth-submit-btn" onclick="handleAuth()">ログイン</button>
@@ -704,7 +704,7 @@
     <!-- ページ 2: My本棚 -->
     <main id="tab-bookshelf" class="content">
       <div class="section-header">
-        <span class="section-title">すべての本棚</span>
+        <span class="section-title">My本棚</span>
       </div>
       <div class="bookshelf-container">
         <div id="full-bookshelf-grid" class="bookshelf-grid"></div>
@@ -714,7 +714,7 @@
     <!-- ページ 3: 履歴 -->
     <main id="tab-history" class="content">
       <div class="section-header">
-        <span class="section-title">すべての貸出履歴</span>
+        <span class="section-title">貸出履歴</span>
       </div>
       <div class="filter-bar">
         <button class="filter-btn active" onclick="setHistoryFilter('all', this)">すべて</button>
@@ -736,7 +736,7 @@
       </button>
       <button class="nav-item" onclick="switchTab('history')" id="nav-history">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        履歴
+        貸出履歴
       </button>
     </nav>
 
@@ -755,7 +755,7 @@
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
           </button>
         </div>
-        <p class="scan-guide">カメラまたは下の入力欄・右下の📁ボタンをご利用ください</p>
+        <p class="scan-guide">カメラまたは下の入力欄をご利用ください</p>
 
         <div class="manual-input-box">
           <input type="text" id="manual-isbn" class="form-input" placeholder="ISBN (例: 9784088825120)" style="font-size:13px; padding:10px 12px; user-select:text;">
@@ -781,21 +781,21 @@
           <div style="flex:1; display:flex; flex-direction:column; gap:10px; min-width:0;">
             <div class="form-group" style="margin-bottom:0;">
               <label class="form-label">作品名</label>
-              <input type="text" id="edit-book-title" class="form-input" placeholder="例: 名探偵コナン" oninput="updateEditCoverPreview(document.getElementById('edit-book-cover').value)">
+              <input type="text" id="edit-book-title" class="form-input" placeholder="" oninput="updateEditCoverPreview(document.getElementById('edit-book-cover').value)">
             </div>
             <div class="form-group" style="margin-bottom:0;">
               <label class="form-label">巻数</label>
-              <input type="text" id="edit-book-volume" class="form-input" placeholder="例: 109" oninput="updateEditCoverPreview(document.getElementById('edit-book-cover').value)">
+              <input type="text" id="edit-book-volume" class="form-input" placeholder="" oninput="updateEditCoverPreview(document.getElementById('edit-book-cover').value)">
             </div>
           </div>
         </div>
 
         <div class="form-group" style="width:100%; margin-bottom:0;">
-          <label class="form-label">表紙画像URL（直接入力も可）</label>
+          <label class="form-label">表紙画像URL</label>
           <input type="text" id="edit-book-cover" class="form-input" placeholder="https://..." oninput="updateEditCoverPreview(this.value)">
         </div>
 
-        <button class="btn-primary" onclick="saveBookAndBorrow()" style="margin-top:4px;">決定して保存</button>
+        <button class="btn-primary" onclick="saveBookAndBorrow()" style="margin-top:4px;">保存</button>
       </div>
     </div>
 
@@ -826,13 +826,14 @@
         </div>
 
         <div class="form-group" style="margin-top:8px; margin-bottom:0;">
-          <label class="form-label">自由メモ</label>
-          <textarea id="detail-memo" class="form-textarea" placeholder="感想や貸し出した友達の名前など自由にメモ..." oninput="saveCurrentMemo()"></textarea>
+          <label class="form-label">メモ</label>
+          <textarea id="detail-memo" class="form-textarea" placeholder="" oninput="saveCurrentMemo()"></textarea>
         </div>
       </div>
     </div>
 
   </div>
+
 
   <script>
     let currentUser = null;
